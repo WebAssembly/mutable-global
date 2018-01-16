@@ -1,4 +1,15 @@
-[![Build Status](https://travis-ci.org/WebAssembly/spec.svg?branch=master)](https://travis-ci.org/WebAssembly/spec)
+[![Build Status](https://travis-ci.org/WebAssembly/mutable-global.svg?branch=master)](https://travis-ci.org/WebAssembly/mutable-global)
+
+# Mutable Global Proposal for WebAssembly
+
+This repository is a clone of github.com/WebAssembly/spec/. It is meant for
+discussion, prototype specification and implementation of a proposal to add
+mutable globals to WebAssembly.
+
+See the [overview](proposals/mutable-global/Overview.md) for a summary of the
+proposal.
+
+Original README from upstream repository follows...
 
 # spec
 
