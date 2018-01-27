@@ -131,7 +131,6 @@ urlPrefix: https://webassembly.github.io/spec/core/; spec: WebAssembly; type: df
     text: memory address; url: exec/runtime.html#syntax-memaddr
     text: global address; url: exec/runtime.html#syntax-globaladdr
     url: syntax/types.html#syntax-valtype
-        text: value type
         text: 𝗂𝟥𝟤
         text: 𝗂𝟨𝟦
         text: 𝖿𝟥𝟤
@@ -732,9 +731,9 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 
 <div algorithm>
     To <dfn>ToValueType</dfn>(|s|), perform the following steps:
-    1. If |s| equals "i32", return |𝗂𝟥𝟤|.
-    1. If |s| equals "f32", return |𝖿𝟥𝟤|.
-    1. If |s| equals "f64", return |𝖿𝟨𝟦|.
+    1. If |s| equals "i32", return [=𝗂𝟥𝟤=].
+    1. If |s| equals "f32", return [=𝖿𝟥𝟤=].
+    1. If |s| equals "f64", return [=𝖿𝟨𝟦=].
     1. Otherwise, throw a {{TypeError}} exception.
 </div>
 
