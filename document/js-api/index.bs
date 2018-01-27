@@ -129,7 +129,9 @@ urlPrefix: https://webassembly.github.io/spec/core/; spec: WebAssembly; type: df
     text: table address; url: exec/runtime.html#syntax-tableaddr
     text: function address; url: exec/runtime.html#syntax-funcaddr
     text: memory address; url: exec/runtime.html#syntax-memaddr
+    text: global address; url: exec/runtime.html#syntax-globaladdr
     url: syntax/types.html#syntax-valtype
+        text: value type
         text: 𝗂𝟥𝟤
         text: 𝗂𝟨𝟦
         text: 𝖿𝟥𝟤
@@ -150,6 +152,9 @@ urlPrefix: https://webassembly.github.io/spec/core/; spec: WebAssembly; type: df
         text: 𝗆𝖾𝗆
         text: 𝗀𝗅𝗈𝖻𝖺𝗅
     text: global type; url: syntax/types.html#syntax-globaltype
+    url: syntax/types.html#syntax-mut
+        text: var
+        text: const
     text: address; url: exec/runtime.html#addresses
 </pre>
 
@@ -225,6 +230,7 @@ Each [=agent=] is associated with the following three [=ordered map=]s:
     * The <dfn>Memory object cache</dfn>, mapping [=memory address=]es to {{Memory}} objects.
     * The <dfn>Table object cache</dfn>, mapping [=table address=]es to {{Table}} objects.
     * The <dfn>Exported Function cache</dfn>, mapping [=function address=]es to [=Exported Function=] objects.
+    * The <dfn>Global object cache</dfn>, mapping [=global address=]es to {{Global}} objects.
 
 <h2 id="webassembly-namespace">The WebAssembly Namespace</h2>
 
@@ -327,12 +333,16 @@ A {{Module}} object represents a single WebAssembly module. Each {{Module}} obje
             1. Let |externfunc| be the [=external value=] [=external value|𝖿𝗎𝗇𝖼=] |funcaddr|.
             1. [=Append=] |externfunc| to |imports|.
         1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] |globaltype|,
-            1. If |globaltype| is [=𝗂𝟨𝟦=] or [=Type=](|v|) is not [=Number=], throw a {{LinkError}} exception.
-            1. Let |value| be [=ToWebAssemblyValue=](|v|, |globaltype|.<em>[=global type|valtype=]</em>)
-            1. Assert: |globaltype|.<em>[=global type|mut=]</em> is [=global type|𝖼𝗈𝗇𝗌𝗍=], as verified by WebAssembly validation.
-            1. Let |store| be the current agent's [=associated store=].
-            1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|).
-            1. Set the current agent's [=associated store=] to |store|.
+            1. If |globaltype| [=Type=](|v|) is [=Number=],
+                1. If |globaltype| is [=𝗂𝟨𝟦=], throw a {{LinkError}} exception.
+                1. Let |value| be [=ToWebAssemblyValue=](|v|, |globaltype|.<em>[=global type|valtype=]</em>)
+                1. Let |store| be the current agent's [=associated store=].
+                1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|).
+                1. Set the current agent's [=associated store=] to |store|.
+            1. If |v| is a {{Global}} instance,
+                1. Let |globaladdr| be |v|.\[[Global]]
+            1. Otherwise,
+                1. Throw a {{LinkError}} exception.
             1. Let |externglobal| be [=external value|𝗀𝗅𝗈𝖻𝖺𝗅=] |globaladdr|.
             1. [=Append=] |externglobal| to |imports|.
         1. If |externtype| is of the form [=𝗆𝖾𝗆=] |memtype|,
@@ -365,11 +375,10 @@ A {{Module}} object represents a single WebAssembly module. Each {{Module}} obje
             1. Let |func| be the result of creating [=a new Exported Function=] from |funcaddr|.
             1. Let |value| be |func|.
         1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] |globaltype|,
-            1. If |globaltype|.<em>[=global type|valtype=]</em>) is [=𝗂𝟨𝟦=], throw a {{LinkError}} exception.
-            1. Assert: |globaltype|.<em>[=global type|mut=]</em> is [=global type|𝖼𝗈𝗇𝗌𝗍=], as verified by WebAssembly validation.
             1. Assert: |externval| is of the form [=external value|𝗀𝗅𝗈𝖻𝖺𝗅=] |globaladdr|.
             1. Let [=external value|𝗀𝗅𝗈𝖻𝖺𝗅=] |globaladdr| be |externval|.
-            1. Let |value| be [=ToJSValue=]([=read_global=](|store|, |globaladdr|)).
+            1. Let |global| be [=create a global object|a new Global object=] created from |globaladdr|.
+            1. Let |value| be |global|.
         1. If |externtype| is of the form [=𝗆𝖾𝗆=] |memtype|,
             1. Assert: |externval| is of the form [=external value|𝗆𝖾𝗆=] |memaddr|.
             1. Let [=external value|𝗆𝖾𝗆=] |memaddr| be |externval|.
@@ -685,6 +694,62 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. Set the current agent's [=associated store=] to |store|.
     1. Set |values|[|index|] to |value|.
     1. Return undefined.
+</div>
+
+<h3 id="globals">Globals</h3>
+
+<pre class="idl">
+dictionary GlobalDescriptor {
+  required USVString type;
+  required Number value;
+  boolean mutable;
+};
+
+[LegacyNamespace=WebAssembly, Constructor(GlobalDescriptor descriptor), Exposed=(Window,Worker,Worklet)]
+interface Global {
+  // TODO: How to define @@toPrimitive hook?
+  // TODO: Types for value getter/setter? (any? union?)
+};
+</pre>
+
+<div>
+A {{Global}} object represents a single [=global instance=]
+which can be simultaneously referenced by multiple {{Instance}} objects. Each
+{{Global}} object has one internal slot:
+
+    * \[[Global]] : a [=global address=]
+</div>
+
+<div algorithm>
+    To <dfn>create a global object</dfn> from a [=global address=] |globaladdr|, perform the following steps:
+    1. Let |map| be the current [=agent=]'s associated [=Global object cache=].
+    1. If |map|[|globaladdr|] [=map/exists=],
+        1. Return |map|[|globaladdr|].
+    1. Let |global| be a new {{Global}} instance with \[[Global]] set to |globaladdr|.
+    1. [=map/Set=] |map|[|globaladdr|] to |global|.
+    1. Return |global|.
+</div>
+
+<div algorithm>
+    To <dfn>ToValueType</dfn>(|s|), perform the following steps:
+    1. If |s| equals "i32", return |𝗂𝟥𝟤|.
+    1. If |s| equals "f32", return |𝖿𝟥𝟤|.
+    1. If |s| equals "f64", return |𝖿𝟨𝟦|.
+    1. Otherwise, throw a {{TypeError}} exception.
+</div>
+
+<div algorithm>
+    The <dfn constructor for="Global">Global(descriptor)</dfn> constructor, when invoked, performs the following steps:
+    1. If |descriptor|["type"] is not [=present=], throw a {{TypeError}} exception.
+    1. If |descriptor|["value"] is [=present=], let |v| be |descriptor|["value"]; otherwise, let |v| be 0.
+    1. If |descriptor|["mutable"] is [=present=], let |mutable| be |descriptor|["mutable"]; otherwise, let |mutable| be false.
+    1. Let |type| be [=ToValueType=](|descriptor|["type"]).
+    1. Let |value| be [=ToWebAssemblyValue=](|v|, |type|).
+    1. If |mutable| is true, let |globaltype| be [=var=] |type|; otherwise, let |globaltype| be [=const=] |type|.
+    1. Let |store| be the current agent's [=associated store=].
+    1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|). <!-- TODO(littledan): Report allocation failure https://github.com/WebAssembly/spec/issues/584 -->
+    1. Set the current agent's [=associated store=] to |store|.
+    1. [=Create a global object=] from the global address |globaladdr| and return the result.
 </div>
 
 <h3 id="exported-function-exotic-objects">Exported Functions</h3>
