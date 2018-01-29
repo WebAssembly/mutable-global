@@ -225,7 +225,7 @@ Elements of the WebAssembly store may be <dfn>identified with</dfn> JavaScript v
 
 Note: There are several WebAssembly objects that may have a corresponding JavaScript object. The correspondence is stored in a per-agent mapping from WebAssembly [=address=]es to JavaScript objects. This mapping is used to ensure that, for a given [=agent=], there exists at most one JavaScript object for a particular WebAssembly address.
 
-Each [=agent=] is associated with the following three [=ordered map=]s:
+Each [=agent=] is associated with the following four [=ordered map=]s:
     * The <dfn>Memory object cache</dfn>, mapping [=memory address=]es to {{Memory}} objects.
     * The <dfn>Table object cache</dfn>, mapping [=table address=]es to {{Table}} objects.
     * The <dfn>Exported Function cache</dfn>, mapping [=function address=]es to [=Exported Function=] objects.
@@ -700,7 +700,7 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 <pre class="idl">
 dictionary GlobalDescriptor {
   required USVString type;
-  required Number value;
+  Number value;
   boolean mutable;
 };
 
@@ -739,7 +739,6 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 
 <div algorithm>
     The <dfn constructor for="Global">Global(descriptor)</dfn> constructor, when invoked, performs the following steps:
-    1. If |descriptor|["type"] is not [=present=], throw a {{TypeError}} exception.
     1. If |descriptor|["value"] is [=present=], let |v| be |descriptor|["value"]; otherwise, let |v| be 0.
     1. If |descriptor|["mutable"] is [=present=], let |mutable| be |descriptor|["mutable"]; otherwise, let |mutable| be false.
     1. Let |type| be [=ToValueType=](|descriptor|["type"]).
