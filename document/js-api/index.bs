@@ -698,16 +698,18 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 <h3 id="globals">Globals</h3>
 
 <pre class="idl">
+typedef (long or float or double) GlobalValue;
+
 dictionary GlobalDescriptor {
   required USVString type;
-  Number value;
+  GlobalValue value;
   boolean mutable;
 };
 
 [LegacyNamespace=WebAssembly, Constructor(GlobalDescriptor descriptor), Exposed=(Window,Worker,Worklet)]
 interface Global {
-  // TODO: How to define @@toPrimitive hook?
-  // TODO: Types for value getter/setter? (any? union?)
+  GlobalValue valueOf();
+  attribute GlobalValue value;
 };
 </pre>
 
@@ -748,6 +750,33 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|). <!-- TODO(littledan): Report allocation failure https://github.com/WebAssembly/spec/issues/584 -->
     1. Set the current agent's [=associated store=] to |store|.
     1. [=Create a global object=] from the global address |globaladdr| and return the result.
+</div>
+
+<div algorithm>
+    The getter of the <dfn attribute for="Global">value</dfn> attribute of {{Global}}, when invoked, performs the following steps:
+    1. Let |global| be the Global instance.
+    1. Let |store| be the current agent's [=associated store=].
+    1. Let |globaladdr| be |global|.\[[Global]].
+    1. Let |globaltype| be [=type_global=](|store|, |globaladdr|).
+    1. If |type| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
+    1. Let |value| be [=read_global=](|store|, |globaladdr|).
+    1. Return [=ToJSValue=](|value|).
+
+    The setter of the value attribute of {{Global}}, when invoked with a value |v|, performs the following steps:
+    1. Let |global| be the Global instance.
+    1. Let |store| be the current agent's [=associated store=].
+    1. Let |globaladdr| be |global|.\[[Global]].
+    1. Let |globaltype| be [=type_global=](|store|, |globaladdr|).
+    1. If |globaltype| is of the form [=const=] |type|, throw a {{TypeError}.
+    1. If |type| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
+    1. Let |value| be [=ToWebAssemblyValue=](|v|, |type|).
+    1. Let |store| be [=write_global=](|store|, |globaladdr|, |value|).
+    1. If |store| is [=error=], throw a {{RangeError}} exception.
+    1. Set the current agent's [=associated store=] to |store|.
+</div>
+
+<div algorithm>
+    The <dfn method for="Global">valueOf()</dfn> method, when invoked, returns the result of invoking the getter for {{Global/value}}.
 </div>
 
 <h3 id="exported-function-exotic-objects">Exported Functions</h3>
