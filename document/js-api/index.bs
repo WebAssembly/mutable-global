@@ -698,18 +698,16 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 <h3 id="globals">Globals</h3>
 
 <pre class="idl">
-typedef (long or float or double) GlobalValue;
-
 dictionary GlobalDescriptor {
   required USVString type;
-  GlobalValue value;
-  boolean mutable;
+  unrestricted double value = 0;
+  boolean mutable = false;
 };
 
 [LegacyNamespace=WebAssembly, Constructor(GlobalDescriptor descriptor), Exposed=(Window,Worker,Worklet)]
 interface Global {
-  GlobalValue valueOf();
-  attribute GlobalValue value;
+  unrestricted double valueOf();
+  attribute unrestricted double value;
 };
 </pre>
 
@@ -732,7 +730,7 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 </div>
 
 <div algorithm>
-    To <dfn>ToValueType</dfn>(|s|), perform the following steps:
+    The algorithm <dfn>ToValueType</dfn>(|s|) performs the following steps:
     1. If |s| equals "i32", return [=𝗂𝟥𝟤=].
     1. If |s| equals "f32", return [=𝖿𝟥𝟤=].
     1. If |s| equals "f64", return [=𝖿𝟨𝟦=].
@@ -741,8 +739,8 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 
 <div algorithm>
     The <dfn constructor for="Global">Global(descriptor)</dfn> constructor, when invoked, performs the following steps:
-    1. If |descriptor|["value"] is [=present=], let |v| be |descriptor|["value"]; otherwise, let |v| be 0.
-    1. If |descriptor|["mutable"] is [=present=], let |mutable| be |descriptor|["mutable"]; otherwise, let |mutable| be false.
+    1. Let |v| be |descriptor|["value"].
+    1. Let |mutable| be |descriptor|["mutable"].
     1. Let |type| be [=ToValueType=](|descriptor|["type"]).
     1. Let |value| be [=ToWebAssemblyValue=](|v|, |type|).
     1. If |mutable| is true, let |globaltype| be [=var=] |type|; otherwise, let |globaltype| be [=const=] |type|.
@@ -753,17 +751,22 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 </div>
 
 <div algorithm>
-    The getter of the <dfn attribute for="Global">value</dfn> attribute of {{Global}}, when invoked, performs the following steps:
-    1. Let |global| be the Global instance.
+    The algorithm <dfn>GetGlobalValue</dfn>({{Global}} |global|) performs the following steps:
     1. Let |store| be the current agent's [=associated store=].
     1. Let |globaladdr| be |global|.\[[Global]].
     1. Let |globaltype| be [=type_global=](|store|, |globaladdr|).
     1. If |type| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
     1. Let |value| be [=read_global=](|store|, |globaladdr|).
     1. Return [=ToJSValue=](|value|).
+</div>
+
+<div algorithm>
+    The getter of the <dfn attribute for="Global">value</dfn> attribute of {{Global}}, when invoked, performs the following steps:
+    1. Let |global| be the {{Global}} instance.
+    1. Return [=GetGlobalValue=](|global|).
 
     The setter of the value attribute of {{Global}}, when invoked with a value |v|, performs the following steps:
-    1. Let |global| be the Global instance.
+    1. Let |global| be the {{Global}} instance.
     1. Let |store| be the current agent's [=associated store=].
     1. Let |globaladdr| be |global|.\[[Global]].
     1. Let |globaltype| be [=type_global=](|store|, |globaladdr|).
@@ -776,7 +779,9 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 </div>
 
 <div algorithm>
-    The <dfn method for="Global">valueOf()</dfn> method, when invoked, returns the result of invoking the getter for {{Global/value}}.
+    The <dfn method for="Global">valueOf()</dfn> method, when invoked, performs the following steps:
+    1. Let |global| be the {{Global}} instance.
+    1. Return [=GetGlobalValue=](|global|).
 </div>
 
 <h3 id="exported-function-exotic-objects">Exported Functions</h3>
