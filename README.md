@@ -9,6 +9,8 @@ mutable globals to WebAssembly.
 See the [overview](proposals/mutable-global/Overview.md) for a summary of the
 proposal.
 
+A formatted version of the spec, including this propsal, is available here: [webassembly.github.io/mutable-global](https://webassembly.github.io/mutable-global).
+
 Original README from upstream repository follows...
 
 # spec
