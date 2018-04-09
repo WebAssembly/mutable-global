@@ -106,7 +106,7 @@
 )
 
 (module
-  (import "spectest" "global" (global i32))
+  (import "spectest" "global_i32" (global i32))
 )
 (assert_malformed
   (module binary
@@ -114,7 +114,7 @@
     "\02\94\80\80\80\00"             ;; import section
       "\01"                          ;; length 1
       "\08\73\70\65\63\74\65\73\74"  ;; "spectest"
-      "\06\67\6c\6f\62\61\6c"        ;; "global"
+      "\0a\67\6c\6f\62\61\6c\5f\69\33\32" ;; "global_i32"
       "\03"                          ;; GlobalImport
       "\7f"                          ;; i32
       "\02"                          ;; invalid mutability
@@ -127,7 +127,7 @@
     "\02\94\80\80\80\00"             ;; import section
       "\01"                          ;; length 1
       "\08\73\70\65\63\74\65\73\74"  ;; "spectest"
-      "\06\67\6c\6f\62\61\6c"        ;; "global"
+      "\0a\67\6c\6f\62\61\6c\5f\69\33\32" ;; "global_i32"
       "\03"                          ;; GlobalImport
       "\7f"                          ;; i32
       "\ff"                          ;; invalid mutability
