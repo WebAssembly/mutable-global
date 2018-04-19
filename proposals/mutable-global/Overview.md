@@ -301,7 +301,7 @@ restriction, we can provide a much nicer solution for thread-local values:
 With the modules instantiated as follows:
 
 ```
-let agentSp = new WebAssembly.Global({type: 'i32', value: 0x100, mutable: true});
+let agentSp = new WebAssembly.Global({type: 'i32', mutable: true}, 0x100);
 
 let imports = {env: {sp: agentSp}};
 WebAssembly.instantiate(m1Bytes, {}).then(
@@ -363,7 +363,7 @@ has two internal slots:
 The `WebAssembly.Global` constructor has the signature:
 
 ```
-new Global(globalDescriptor)
+new Global(globalDescriptor, value=0)
 ```
 
 If the NewTarget is `undefined`, a [`TypeError`][] exception is thrown (i.e.,
@@ -385,10 +385,9 @@ Let `mutable` be [`ToBoolean`][]([`Get`][](`globalDescriptor`, `"mutable"`)).
 
 Let `mut` be `var` if `mutable` is true, or `const` if `mutable` is false.
 
-Let `value` be [`ToWebAssemblyValue`][]([`Get`][](`globalDescriptor`,
-`"value"`)) coerced to `type`.
+Let `v` be `value` coerced to `type`.
 
-Return the result of `CreateGlobalObject`(`value`, `mut`, `type`).
+Return the result of `CreateGlobalObject`(`v`, `mut`, `type`).
 
 #### CreateGlobalObject
 
