@@ -720,11 +720,10 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 <pre class="idl">
 dictionary GlobalDescriptor {
   required USVString type;
-  unrestricted double value = 0;
   boolean mutable = false;
 };
 
-[LegacyNamespace=WebAssembly, Constructor(GlobalDescriptor descriptor), Exposed=(Window,Worker,Worklet)]
+[LegacyNamespace=WebAssembly, Constructor(GlobalDescriptor descriptor, unrestricted double value = 0), Exposed=(Window,Worker,Worklet)]
 interface Global {
   unrestricted double valueOf();
   attribute unrestricted double value;
@@ -758,8 +757,7 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 </div>
 
 <div algorithm>
-    The <dfn constructor for="Global">Global(descriptor)</dfn> constructor, when invoked, performs the following steps:
-    1. Let |v| be |descriptor|["value"].
+    The <dfn constructor for="Global">Global(descriptor, v)</dfn> constructor, when invoked, performs the following steps:
     1. Let |mutable| be |descriptor|["mutable"].
     1. Let |type| be [=ToValueType=](|descriptor|["type"]).
     1. Let |value| be [=ToWebAssemblyValue=](|v|, |type|).
