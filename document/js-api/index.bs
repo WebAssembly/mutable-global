@@ -333,12 +333,12 @@ A {{Module}} object represents a single WebAssembly module. Each {{Module}} obje
                 1. Let |index| be the number of external functions in |imports|. This value |index| is known as the <dfn>index of the host function</dfn> |funcaddr|.
             1. Let |externfunc| be the [=external value=] [=external value|𝖿𝗎𝗇𝖼=] |funcaddr|.
             1. [=Append=] |externfunc| to |imports|.
-        1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] |globaltype|,
-            1. If |globaltype| [=Type=](|v|) is [=Number=],
-                1. If |globaltype| is [=𝗂𝟨𝟦=], throw a {{LinkError}} exception.
-                1. Let |value| be [=ToWebAssemblyValue=](|v|, |globaltype|.<em>[=global type|valtype=]</em>)
+        1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] |mut| |valtype|,
+            1. If [=Type=](|v|) is [=Number=],
+                1. If |valtype| is [=𝗂𝟨𝟦=], throw a {{LinkError}} exception.
+                1. Let |value| be [=ToWebAssemblyValue=](|v|, |valtype|)
                 1. Let |store| be the current agent's [=associated store=].
-                1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|).
+                1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, [=const=] |valtype|, |value|).
                 1. Set the [[surrounding agent=]'s [=associated store=] to |store|.
             1. If |v| is a {{Global}} instance,
                 1. Let |globaladdr| be |v|.\[[Global]]
