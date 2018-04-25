@@ -113,6 +113,9 @@ let mem1;
 let Table;
 let tbl1;
 let tableProto;
+let Global;
+let globalProto;
+let global1;
 
 let emptyModule;
 let exportingModule;
@@ -660,6 +663,112 @@ test(() => {
     assert_equals(tbl.length, 2);
     assertThrows(() => tbl.grow(1), Error);
 }, "'WebAssembly.Table.prototype.grow' method");
+
+test(() => {
+    const globalDesc = Object.getOwnPropertyDescriptor(WebAssembly, 'Global');
+    assert_equals(typeof globalDesc.value, "function");
+    assert_equals(globalDesc.writable, true);
+    assert_equals(globalDesc.enumerable, false);
+    assert_equals(globalDesc.configurable, true);
+    Global = WebAssembly.Global;
+}, "'WebAssembly.Global' data property");
+
+test(() => {
+    const globalDesc = Object.getOwnPropertyDescriptor(WebAssembly, 'Global');
+    assert_equals(Global, globalDesc.value);
+    assert_equals(Global.length, 1);
+    assert_equals(Global.name, "Global");
+    assertThrows(() => Global(), TypeError);
+    assertThrows(() => new Global(1), TypeError);
+    assertThrows(() => new Global({}), TypeError);
+    assertThrows(() => new Global({type: 'foo'}), TypeError);
+    assertThrows(() => new Global({type: 'i64'}), TypeError);
+    assert_equals(new Global({type:'i32'}) instanceof Global, true);
+    assert_equals(new Global({type:'f32'}) instanceof Global, true);
+    assert_equals(new Global({type:'f64'}) instanceof Global, true);
+    assert_equals(new Global({type:'i32', mutable: false}) instanceof Global, true);
+    assert_equals(new Global({type:'f64', mutable: false}) instanceof Global, true);
+    assert_equals(new Global({type:'f64', mutable: false}) instanceof Global, true);
+    assert_equals(new Global({type:'i32', mutable: true}) instanceof Global, true);
+    assert_equals(new Global({type:'f64', mutable: true}) instanceof Global, true);
+    assert_equals(new Global({type:'f64', mutable: true}) instanceof Global, true);
+    assert_equals(new Global({type:'i32'}, 0x132) instanceof Global, true);
+    assert_equals(new Global({type:'f32'}, 0xf32) instanceof Global, true);
+    assert_equals(new Global({type:'f64'}, 0xf64) instanceof Global, true);
+    assert_equals(new Global({type:'i32', mutable: false}, 0x132) instanceof Global, true);
+    assert_equals(new Global({type:'f32', mutable: false}, 0xf32) instanceof Global, true);
+    assert_equals(new Global({type:'f64', mutable: false}, 0xf64) instanceof Global, true);
+    assert_equals(new Global({type:'i32', mutable: true}, 0x132) instanceof Global, true);
+    assert_equals(new Global({type:'f32', mutable: true}, 0xf32) instanceof Global, true);
+    assert_equals(new Global({type:'f64', mutable: true}, 0xf64) instanceof Global, true);
+}, "'WebAssembly.Global' constructor function");
+
+test(() => {
+    const globalProtoDesc = Object.getOwnPropertyDescriptor(Global, 'prototype');
+    assert_equals(typeof globalProtoDesc.value, "object");
+    assert_equals(globalProtoDesc.writable, false);
+    assert_equals(globalProtoDesc.enumerable, false);
+    assert_equals(globalProtoDesc.configurable, false);
+}, "'WebAssembly.Global.prototype' data property");
+
+test(() => {
+    const globalProtoDesc = Object.getOwnPropertyDescriptor(Global, 'prototype');
+    globalProto = Global.prototype;
+    assert_equals(globalProto, globalProtoDesc.value);
+    assert_equals(String(globalProto), "[object WebAssembly.Global]");
+    assert_equals(Object.getPrototypeOf(globalProto), Object.prototype);
+}, "'WebAssembly.Global.prototype' object");
+
+test(() => {
+    global1 = new Global({type: 'i32'}, 0x132);
+    assert_equals(typeof global1, "object");
+    assert_equals(String(global1), "[object WebAssembly.Global]");
+    assert_equals(Object.getPrototypeOf(global1), globalProto);
+}, "'WebAssembly.Global' instance objects");
+
+test(() => {
+    const lengthDesc = Object.getOwnPropertyDescriptor(globalProto, 'value');
+    assert_equals(typeof lengthDesc.get, "function");
+    assert_equals(typeof lengthDesc.set, "function");
+    assert_equals(lengthDesc.enumerable, false);
+    assert_equals(lengthDesc.configurable, true);
+}, "'WebAssembly.Global.prototype.value' accessor data property");
+
+test(() => {
+    const valueDesc = Object.getOwnPropertyDescriptor(globalProto, 'value');
+    const valueGetter = valueDesc.get;
+    assert_equals(valueGetter.length, 0);
+    assertThrows(() => valueGetter.call(), TypeError);
+    assertThrows(() => valueGetter.call({}), TypeError);
+    assert_equals(typeof valueGetter.call(global1), "number");
+    assert_equals(valueGetter.call(global1), 0x132);
+}, "'WebAssembly.Global.prototype.value' getter");
+
+test(() => {
+    const valueDesc = Object.getOwnPropertyDescriptor(globalProto, 'value');
+    const valueSetter = valueDesc.set;
+    assert_equals(valueSetter.length, 0);
+    assertThrows(() => valueSetter.call(), TypeError);
+    assertThrows(() => valueSetter.call({}), TypeError);
+    assert_equals(valueSetter.call(global1, 1234), undefined);
+    assert_equals(global1.value, 1234);
+}, "'WebAssembly.Global.prototype.value' setter");
+
+test(() => {
+    const valueOfDesc = Object.getOwnPropertyDescriptor(globalProto, 'valueOf');
+    assert_equals(typeof valueOfDesc.value, "function");
+    assert_equals(valueOfDesc.enumerable, false);
+    assert_equals(valueOfDesc.configurable, true);
+}, "'WebAssembly.Global.prototype.valueOf' data property");
+
+test(() => {
+    const valueOfDesc = Object.getOwnPropertyDescriptor(globalProto, 'valueOf');
+    const valueOf = valueOfDesc.value;
+    assert_equals(valueOf.length, 0);
+    assertThrows(() => valueOf.call(), TypeError);
+    assertThrows(() => valueOf.call({}), TypeError);
+    assert_equals(valueOf.call(global1), 1234);
+}, "'WebAssembly.Global.prototype.valueOf' method");
 
 test(() => {
     assertThrows(() => WebAssembly.validate(), TypeError);
