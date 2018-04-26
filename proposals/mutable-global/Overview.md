@@ -404,7 +404,7 @@ The initial value of the [`@@toStringTag`][] property is the String value `"WebA
 
 This property has the attributes { [[Writable]]: `false`, [[Enumerable]]: `false`, [[Configurable]]: `true` }.
 
-#### `WebAssembly.Global.prototype [ @@toPrimitive ]` Property
+#### `WebAssembly.Global.prototype.valueOf()` Method
 
 1. If \[\[GlobalType\]\].`valtype` is `i64`, throw a [`TypeError`][].
 1. Return [`ToJSValue`][](\[\[Global\]\].`value`).
