@@ -115,7 +115,14 @@ let tbl1;
 let tableProto;
 let Global;
 let globalProto;
-let global1;
+let globalI32;
+let globalI64;
+let globalF32;
+let globalF64;
+let globalI32Mut;
+let globalI64Mut;
+let globalF32Mut;
+let globalF64Mut;
 
 let emptyModule;
 let exportingModule;
@@ -720,11 +727,52 @@ test(() => {
 }, "'WebAssembly.Global.prototype' object");
 
 test(() => {
-    global1 = new Global({type: 'i32'}, 0x132);
-    assert_equals(typeof global1, "object");
-    assert_equals(String(global1), "[object WebAssembly.Global]");
-    assert_equals(Object.getPrototypeOf(global1), globalProto);
+    globalI32 = new Global({type: 'i32'}, 0x132);
+    globalF32 = new Global({type: 'f32'}, 0xf32);
+    globalF64 = new Global({type: 'f64'}, 0xf64);
+    globalI32Mut = new Global({type: 'i32', mutable: true}, 0x132);
+    globalF32Mut = new Global({type: 'f32', mutable: true}, 0xf32);
+    globalF64Mut = new Global({type: 'f64', mutable: true}, 0xf64);
+    assert_equals(typeof globalI32, "object");
+    assert_equals(String(globalI32), "[object WebAssembly.Global]");
+    assert_equals(Object.getPrototypeOf(globalI32), globalProto);
 }, "'WebAssembly.Global' instance objects");
+
+test(() => {
+    let builder = new WasmModuleBuilder();
+    builder.addGlobal(kWasmI32).exportAs('i32');
+    builder.addGlobal(kWasmI64).exportAs('i64');
+    builder.addGlobal(kWasmF32).exportAs('f32');
+    builder.addGlobal(kWasmF64).exportAs('f64');
+    builder.addGlobal(kWasmI32, true).exportAs('i32mut');
+    builder.addGlobal(kWasmI64, true).exportAs('i64mut');
+    builder.addGlobal(kWasmF32, true).exportAs('f32mut');
+    builder.addGlobal(kWasmF64, true).exportAs('f64mut');
+    let module = new WebAssembly.Module(builder.toBuffer());
+    let instance = new WebAssembly.Instance(module);
+
+    assert_true(instance.exports.i32 instanceof WebAssembly.Global);
+    assert_true(instance.exports.i64 instanceof WebAssembly.Global);
+    assert_true(instance.exports.f32 instanceof WebAssembly.Global);
+    assert_true(instance.exports.f64 instanceof WebAssembly.Global);
+    assert_true(instance.exports.i32mut instanceof WebAssembly.Global);
+    assert_true(instance.exports.i64mut instanceof WebAssembly.Global);
+    assert_true(instance.exports.f32mut instanceof WebAssembly.Global);
+    assert_true(instance.exports.f64mut instanceof WebAssembly.Global);
+
+    // Can't set value of immutable globals.
+    assertThrows(() => instance.exports.i32.value = 0);
+    assertThrows(() => instance.exports.i64.value = 0);
+    assertThrows(() => instance.exports.f32.value = 0);
+    assertThrows(() => instance.exports.f64.value = 0);
+
+    instance.exports.i32mut.value = 13579;
+    instance.exports.f32mut.value = 24680;
+    instance.exports.f64mut.value = 124816;
+
+    globalI64 = instance.exports.i64;
+    globalI64Mut = instance.exports.i64mut;
+}, "Export 'WebAssembly.Global'");
 
 test(() => {
     const lengthDesc = Object.getOwnPropertyDescriptor(globalProto, 'value');
@@ -740,18 +788,44 @@ test(() => {
     assert_equals(valueGetter.length, 0);
     assertThrows(() => valueGetter.call(), TypeError);
     assertThrows(() => valueGetter.call({}), TypeError);
-    assert_equals(typeof valueGetter.call(global1), "number");
-    assert_equals(valueGetter.call(global1), 0x132);
+
+    assert_equals(typeof valueGetter.call(globalI32), "number");
+    assertThrows(() => valueGetter.call(globalI64));
+    assert_equals(typeof valueGetter.call(globalF32), "number");
+    assert_equals(typeof valueGetter.call(globalF64), "number");
+    assert_equals(typeof valueGetter.call(globalI32Mut), "number");
+    assertThrows(() => valueGetter.call(globalI64Mut));
+    assert_equals(typeof valueGetter.call(globalF32Mut), "number");
+    assert_equals(typeof valueGetter.call(globalF64Mut), "number");
+
+    assert_equals(valueGetter.call(globalI32), 0x132);
+    assert_equals(valueGetter.call(globalF32), 0xf32);
+    assert_equals(valueGetter.call(globalF64), 0xf64);
+    assert_equals(valueGetter.call(globalI32Mut), 0x132);
+    assert_equals(valueGetter.call(globalF32Mut), 0xf32);
+    assert_equals(valueGetter.call(globalF64Mut), 0xf64);
 }, "'WebAssembly.Global.prototype.value' getter");
 
 test(() => {
     const valueDesc = Object.getOwnPropertyDescriptor(globalProto, 'value');
     const valueSetter = valueDesc.set;
-    assert_equals(valueSetter.length, 0);
+    assert_equals(valueSetter.length, 1);
     assertThrows(() => valueSetter.call(), TypeError);
     assertThrows(() => valueSetter.call({}), TypeError);
-    assert_equals(valueSetter.call(global1, 1234), undefined);
-    assert_equals(global1.value, 1234);
+
+    assertThrows(() => valueSetter.call(globalI32, 1234));
+    assertThrows(() => valueSetter.call(globalI64, 1234));
+    assertThrows(() => valueSetter.call(globalF32, 1234));
+    assertThrows(() => valueSetter.call(globalF64, 1234));
+
+    valueSetter.call(globalI32Mut, 1234);
+    assertThrows(() => valueSetter.call(globalI64Mut, 1234));
+    valueSetter.call(globalF32Mut, 5678);
+    valueSetter.call(globalF64Mut, 9012);
+
+    assert_equals(globalI32Mut.value, 1234);
+    assert_equals(globalF32Mut.value, 5678);
+    assert_equals(globalF64Mut.value, 9012);
 }, "'WebAssembly.Global.prototype.value' setter");
 
 test(() => {
@@ -767,8 +841,107 @@ test(() => {
     assert_equals(valueOf.length, 0);
     assertThrows(() => valueOf.call(), TypeError);
     assertThrows(() => valueOf.call({}), TypeError);
-    assert_equals(valueOf.call(global1), 1234);
+
+    assert_equals(valueOf.call(globalI32), 0x132);
+    assertThrows(() => valueOf.call(globalI64));
+    assert_equals(valueOf.call(globalF32), 0xf32);
+    assert_equals(valueOf.call(globalF64), 0xf64);
+    assert_equals(valueOf.call(globalI32Mut), 1234);
+    assertThrows(() => valueOf.call(globalI64Mut));
+    assert_equals(valueOf.call(globalF32Mut), 5678);
+    assert_equals(valueOf.call(globalF64Mut), 9012);
 }, "'WebAssembly.Global.prototype.valueOf' method");
+
+test(() => {
+    assert_equals(new Global({type: 'i32'}).value, 0);
+    assert_equals(new Global({type: 'f32'}).value, 0);
+    assert_equals(new Global({type: 'f64'}).value, 0);
+}, "'WebAssembly.Global' default value is 0");
+
+test(() => {
+    let builder = new WasmModuleBuilder();
+    builder.addImportedGlobal('', 'i32', kWasmI32);
+    builder.addImportedGlobal('', 'i64', kWasmI64);
+    builder.addImportedGlobal('', 'f32', kWasmF32);
+    builder.addImportedGlobal('', 'f64', kWasmF64);
+    builder.addImportedGlobal('', 'i32mut', kWasmI32, true);
+    builder.addImportedGlobal('', 'i64mut', kWasmI64, true);
+    builder.addImportedGlobal('', 'f32mut', kWasmF32, true);
+    builder.addImportedGlobal('', 'f64mut', kWasmF64, true);
+    let module = new WebAssembly.Module(builder.toBuffer());
+    let instance = new WebAssembly.Instance(module, {
+        '': {
+          i32: globalI32,
+          i64: globalI64,
+          f32: globalF32,
+          f64: globalF64,
+          i32mut: globalI32Mut,
+          i64mut: globalI64Mut,
+          f32mut: globalF32Mut,
+          f64mut: globalF64Mut
+        }
+    });
+}, "Import 'WebAssembly.Global'");
+
+test(() => {
+    let assertInstanceError = (type, mutable, imports) => {
+      try {
+        let builder = new WasmModuleBuilder();
+        builder.addImportedGlobal('', 'g', type, mutable);
+        let module = new WebAssembly.Module(builder.toBuffer());
+        let instance = new WebAssembly.Instance(module, imports);
+        throw null;
+      } catch(e) {
+        assert_true(e instanceof LinkError);
+      }
+    };
+
+    const immutable = false, mutable = true;
+
+    // Type mismatch.
+    assertInstanceError(kWasmI32, immutable, {'': {g: globalI64}});
+    assertInstanceError(kWasmI32, immutable, {'': {g: globalF32}});
+    assertInstanceError(kWasmI32, immutable, {'': {g: globalF64}});
+    assertInstanceError(kWasmI64, immutable, {'': {g: globalI32}});
+    assertInstanceError(kWasmI64, immutable, {'': {g: globalF32}});
+    assertInstanceError(kWasmI64, immutable, {'': {g: globalF64}});
+    assertInstanceError(kWasmF32, immutable, {'': {g: globalI32}});
+    assertInstanceError(kWasmF32, immutable, {'': {g: globalI64}});
+    assertInstanceError(kWasmF32, immutable, {'': {g: globalF64}});
+    assertInstanceError(kWasmF64, immutable, {'': {g: globalI32}});
+    assertInstanceError(kWasmF64, immutable, {'': {g: globalI64}});
+    assertInstanceError(kWasmF64, immutable, {'': {g: globalF32}});
+
+    assertInstanceError(kWasmI32, mutable, {'': {g: globalI64Mut}});
+    assertInstanceError(kWasmI32, mutable, {'': {g: globalF32Mut}});
+    assertInstanceError(kWasmI32, mutable, {'': {g: globalF64Mut}});
+    assertInstanceError(kWasmI64, mutable, {'': {g: globalI32Mut}});
+    assertInstanceError(kWasmI64, mutable, {'': {g: globalF32Mut}});
+    assertInstanceError(kWasmI64, mutable, {'': {g: globalF64Mut}});
+    assertInstanceError(kWasmF32, mutable, {'': {g: globalI32Mut}});
+    assertInstanceError(kWasmF32, mutable, {'': {g: globalI64Mut}});
+    assertInstanceError(kWasmF32, mutable, {'': {g: globalF64Mut}});
+    assertInstanceError(kWasmF64, mutable, {'': {g: globalI32Mut}});
+    assertInstanceError(kWasmF64, mutable, {'': {g: globalI64Mut}});
+    assertInstanceError(kWasmF64, mutable, {'': {g: globalF32Mut}});
+
+    // Mutable mismatch.
+    assertInstanceError(kWasmI32, immutable, {'': {g: globalI32Mut}});
+    assertInstanceError(kWasmI64, immutable, {'': {g: globalI64Mut}});
+    assertInstanceError(kWasmF32, immutable, {'': {g: globalF32Mut}});
+    assertInstanceError(kWasmF64, immutable, {'': {g: globalF64Mut}});
+
+    assertInstanceError(kWasmI32, mutable, {'': {g: globalI32}});
+    assertInstanceError(kWasmI64, mutable, {'': {g: globalI64}});
+    assertInstanceError(kWasmF32, mutable, {'': {g: globalF32}});
+    assertInstanceError(kWasmF64, mutable, {'': {g: globalF64}});
+
+    // Can't import Number as mutable.
+    assertInstanceError(kWasmI32, mutable, {'': {g: 1}});
+    assertInstanceError(kWasmI64, mutable, {'': {g: 1}});
+    assertInstanceError(kWasmF32, mutable, {'': {g: 1}});
+    assertInstanceError(kWasmF64, mutable, {'': {g: 1}});
+}, "Import 'WebAssembly.Global' type mismatch");
 
 test(() => {
     assertThrows(() => WebAssembly.validate(), TypeError);
