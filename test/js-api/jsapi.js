@@ -761,10 +761,10 @@ test(() => {
     assert_true(instance.exports.f64mut instanceof WebAssembly.Global);
 
     // Can't set value of immutable globals.
-    assertThrows(() => instance.exports.i32.value = 0);
-    assertThrows(() => instance.exports.i64.value = 0);
-    assertThrows(() => instance.exports.f32.value = 0);
-    assertThrows(() => instance.exports.f64.value = 0);
+    assertThrows(() => instance.exports.i32.value = 0, TypeError);
+    assertThrows(() => instance.exports.i64.value = 0, TypeError);
+    assertThrows(() => instance.exports.f32.value = 0, TypeError);
+    assertThrows(() => instance.exports.f64.value = 0, TypeError);
 
     instance.exports.i32mut.value = 13579;
     instance.exports.f32mut.value = 24680;
@@ -790,11 +790,11 @@ test(() => {
     assertThrows(() => valueGetter.call({}), TypeError);
 
     assert_equals(typeof valueGetter.call(globalI32), "number");
-    assertThrows(() => valueGetter.call(globalI64));
+    assertThrows(() => valueGetter.call(globalI64), TypeError);
     assert_equals(typeof valueGetter.call(globalF32), "number");
     assert_equals(typeof valueGetter.call(globalF64), "number");
     assert_equals(typeof valueGetter.call(globalI32Mut), "number");
-    assertThrows(() => valueGetter.call(globalI64Mut));
+    assertThrows(() => valueGetter.call(globalI64Mut), TypeError);
     assert_equals(typeof valueGetter.call(globalF32Mut), "number");
     assert_equals(typeof valueGetter.call(globalF64Mut), "number");
 
@@ -813,13 +813,13 @@ test(() => {
     assertThrows(() => valueSetter.call(), TypeError);
     assertThrows(() => valueSetter.call({}), TypeError);
 
-    assertThrows(() => valueSetter.call(globalI32, 1234));
-    assertThrows(() => valueSetter.call(globalI64, 1234));
-    assertThrows(() => valueSetter.call(globalF32, 1234));
-    assertThrows(() => valueSetter.call(globalF64, 1234));
+    assertThrows(() => valueSetter.call(globalI32, 1234), TypeError);
+    assertThrows(() => valueSetter.call(globalI64, 1234), TypeError);
+    assertThrows(() => valueSetter.call(globalF32, 1234), TypeError);
+    assertThrows(() => valueSetter.call(globalF64, 1234), TypeError);
 
     valueSetter.call(globalI32Mut, 1234);
-    assertThrows(() => valueSetter.call(globalI64Mut, 1234));
+    assertThrows(() => valueSetter.call(globalI64Mut, 1234), TypeError);
     valueSetter.call(globalF32Mut, 5678);
     valueSetter.call(globalF64Mut, 9012);
 
@@ -843,11 +843,11 @@ test(() => {
     assertThrows(() => valueOf.call({}), TypeError);
 
     assert_equals(valueOf.call(globalI32), 0x132);
-    assertThrows(() => valueOf.call(globalI64));
+    assertThrows(() => valueOf.call(globalI64), TypeError);
     assert_equals(valueOf.call(globalF32), 0xf32);
     assert_equals(valueOf.call(globalF64), 0xf64);
     assert_equals(valueOf.call(globalI32Mut), 1234);
-    assertThrows(() => valueOf.call(globalI64Mut));
+    assertThrows(() => valueOf.call(globalI64Mut), TypeError);
     assert_equals(valueOf.call(globalF32Mut), 5678);
     assert_equals(valueOf.call(globalF64Mut), 9012);
 }, "'WebAssembly.Global.prototype.valueOf' method");
@@ -885,15 +885,12 @@ test(() => {
 
 test(() => {
     let assertInstanceError = (type, mutable, imports) => {
-      try {
+      assertThrows(() => {
         let builder = new WasmModuleBuilder();
         builder.addImportedGlobal('', 'g', type, mutable);
         let module = new WebAssembly.Module(builder.toBuffer());
         let instance = new WebAssembly.Instance(module, imports);
-        throw null;
-      } catch(e) {
-        assert_true(e instanceof LinkError);
-      }
+      }, LinkError);
     };
 
     const immutable = false, mutable = true;
