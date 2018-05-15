@@ -371,7 +371,7 @@ this constructor cannot be called as a function without `new`).
 
 If `Type(globalDescriptor)` is not Object, a [`TypeError`][] is thrown.
 
-Let `typeName` be [`ToString`][]([`Get`][](`globalDescriptor`, `"type"`)).
+Let `typeName` be [`ToString`][]([`Get`][](`globalDescriptor`, `"value"`)).
 
 If `typeName` is not one of `"i32"`, `"f32"`, or `"f64"`, throw a [`TypeError`][].
 
@@ -397,12 +397,6 @@ Let `g` be a new [`global instance`][] with `value` `v` and `mut` `m`.
 Let `gt` be a new [`global_type`][] with `mut` `m` and type `t`.
 
 Return a new `WebAssembly.Global` with \[\[Global\]\] set to `g` and \[\[GlobalType\]\] `gt`.
-
-#### `WebAssembly.Global.prototype [ @@toStringTag ]` Property
-
-The initial value of the [`@@toStringTag`][] property is the String value `"WebAssembly.Global"`.
-
-This property has the attributes { [[Writable]]: `false`, [[Enumerable]]: `false`, [[Configurable]]: `true` }.
 
 #### `WebAssembly.Global.prototype.valueOf()` Method
 
