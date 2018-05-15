@@ -688,26 +688,26 @@ test(() => {
     assertThrows(() => Global(), TypeError);
     assertThrows(() => new Global(1), TypeError);
     assertThrows(() => new Global({}), TypeError);
-    assertThrows(() => new Global({type: 'foo'}), TypeError);
-    assertThrows(() => new Global({type: 'i64'}), TypeError);
-    assert_equals(new Global({type:'i32'}) instanceof Global, true);
-    assert_equals(new Global({type:'f32'}) instanceof Global, true);
-    assert_equals(new Global({type:'f64'}) instanceof Global, true);
-    assert_equals(new Global({type:'i32', mutable: false}) instanceof Global, true);
-    assert_equals(new Global({type:'f64', mutable: false}) instanceof Global, true);
-    assert_equals(new Global({type:'f64', mutable: false}) instanceof Global, true);
-    assert_equals(new Global({type:'i32', mutable: true}) instanceof Global, true);
-    assert_equals(new Global({type:'f64', mutable: true}) instanceof Global, true);
-    assert_equals(new Global({type:'f64', mutable: true}) instanceof Global, true);
-    assert_equals(new Global({type:'i32'}, 0x132) instanceof Global, true);
-    assert_equals(new Global({type:'f32'}, 0xf32) instanceof Global, true);
-    assert_equals(new Global({type:'f64'}, 0xf64) instanceof Global, true);
-    assert_equals(new Global({type:'i32', mutable: false}, 0x132) instanceof Global, true);
-    assert_equals(new Global({type:'f32', mutable: false}, 0xf32) instanceof Global, true);
-    assert_equals(new Global({type:'f64', mutable: false}, 0xf64) instanceof Global, true);
-    assert_equals(new Global({type:'i32', mutable: true}, 0x132) instanceof Global, true);
-    assert_equals(new Global({type:'f32', mutable: true}, 0xf32) instanceof Global, true);
-    assert_equals(new Global({type:'f64', mutable: true}, 0xf64) instanceof Global, true);
+    assertThrows(() => new Global({value: 'foo'}), TypeError);
+    assertThrows(() => new Global({value: 'i64'}), TypeError);
+    assert_equals(new Global({value:'i32'}) instanceof Global, true);
+    assert_equals(new Global({value:'f32'}) instanceof Global, true);
+    assert_equals(new Global({value:'f64'}) instanceof Global, true);
+    assert_equals(new Global({value:'i32', mutable: false}) instanceof Global, true);
+    assert_equals(new Global({value:'f64', mutable: false}) instanceof Global, true);
+    assert_equals(new Global({value:'f64', mutable: false}) instanceof Global, true);
+    assert_equals(new Global({value:'i32', mutable: true}) instanceof Global, true);
+    assert_equals(new Global({value:'f64', mutable: true}) instanceof Global, true);
+    assert_equals(new Global({value:'f64', mutable: true}) instanceof Global, true);
+    assert_equals(new Global({value:'i32'}, 0x132) instanceof Global, true);
+    assert_equals(new Global({value:'f32'}, 0xf32) instanceof Global, true);
+    assert_equals(new Global({value:'f64'}, 0xf64) instanceof Global, true);
+    assert_equals(new Global({value:'i32', mutable: false}, 0x132) instanceof Global, true);
+    assert_equals(new Global({value:'f32', mutable: false}, 0xf32) instanceof Global, true);
+    assert_equals(new Global({value:'f64', mutable: false}, 0xf64) instanceof Global, true);
+    assert_equals(new Global({value:'i32', mutable: true}, 0x132) instanceof Global, true);
+    assert_equals(new Global({value:'f32', mutable: true}, 0xf32) instanceof Global, true);
+    assert_equals(new Global({value:'f64', mutable: true}, 0xf64) instanceof Global, true);
 }, "'WebAssembly.Global' constructor function");
 
 test(() => {
@@ -727,12 +727,12 @@ test(() => {
 }, "'WebAssembly.Global.prototype' object");
 
 test(() => {
-    globalI32 = new Global({type: 'i32'}, 0x132);
-    globalF32 = new Global({type: 'f32'}, 0xf32);
-    globalF64 = new Global({type: 'f64'}, 0xf64);
-    globalI32Mut = new Global({type: 'i32', mutable: true}, 0x132);
-    globalF32Mut = new Global({type: 'f32', mutable: true}, 0xf32);
-    globalF64Mut = new Global({type: 'f64', mutable: true}, 0xf64);
+    globalI32 = new Global({value: 'i32'}, 0x132);
+    globalF32 = new Global({value: 'f32'}, 0xf32);
+    globalF64 = new Global({value: 'f64'}, 0xf64);
+    globalI32Mut = new Global({value: 'i32', mutable: true}, 0x132);
+    globalF32Mut = new Global({value: 'f32', mutable: true}, 0xf32);
+    globalF64Mut = new Global({value: 'f64', mutable: true}, 0xf64);
     assert_equals(typeof globalI32, "object");
     assert_equals(String(globalI32), "[object WebAssembly.Global]");
     assert_equals(Object.getPrototypeOf(globalI32), globalProto);
@@ -853,9 +853,9 @@ test(() => {
 }, "'WebAssembly.Global.prototype.valueOf' method");
 
 test(() => {
-    assert_equals(new Global({type: 'i32'}).value, 0);
-    assert_equals(new Global({type: 'f32'}).value, 0);
-    assert_equals(new Global({type: 'f64'}).value, 0);
+    assert_equals(new Global({value: 'i32'}).value, 0);
+    assert_equals(new Global({value: 'f32'}).value, 0);
+    assert_equals(new Global({value: 'f64'}).value, 0);
 }, "'WebAssembly.Global' default value is 0");
 
 test(() => {
