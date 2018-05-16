@@ -719,7 +719,7 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 
 <pre class="idl">
 dictionary GlobalDescriptor {
-  required USVString type;
+  required USVString value;
   boolean mutable = false;
 };
 
@@ -759,9 +759,9 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
 <div algorithm>
     The <dfn constructor for="Global">Global(descriptor, v)</dfn> constructor, when invoked, performs the following steps:
     1. Let |mutable| be |descriptor|["mutable"].
-    1. Let |type| be [=ToValueType=](|descriptor|["type"]).
-    1. Let |value| be [=ToWebAssemblyValue=](|v|, |type|).
-    1. If |mutable| is true, let |globaltype| be [=var=] |type|; otherwise, let |globaltype| be [=const=] |type|.
+    1. Let |valuetype| be [=ToValueType=](|descriptor|["value"]).
+    1. Let |value| be [=ToWebAssemblyValue=](|v|, |valuetype|).
+    1. If |mutable| is true, let |globaltype| be [=var=] |valuetype|; otherwise, let |globaltype| be [=const=] |valuetype|.
     1. Let |store| be the current agent's [=associated store=].
     1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|). <!-- TODO(littledan): Report allocation failure https://github.com/WebAssembly/spec/issues/584 -->
     1. Set the current agent's [=associated store=] to |store|.
@@ -773,7 +773,7 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. Let |store| be the current agent's [=associated store=].
     1. Let |globaladdr| be |global|.\[[Global]].
     1. Let |globaltype| be [=type_global=](|store|, |globaladdr|).
-    1. If |type| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
+    1. If |globaltype| is of the form |mut| [=𝗂𝟨𝟦=], throw a {{TypeError}}.
     1. Let |value| be [=read_global=](|store|, |globaladdr|).
     1. Return [=ToJSValue=](|value|).
 </div>
@@ -787,10 +787,10 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. Let |global| be the {{Global}} instance.
     1. Let |store| be the current agent's [=associated store=].
     1. Let |globaladdr| be |global|.\[[Global]].
-    1. Let |globaltype| be [=type_global=](|store|, |globaladdr|).
-    1. If |globaltype| is of the form [=const=] |type|, throw a {{TypeError}.
-    1. If |type| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
-    1. Let |value| be [=ToWebAssemblyValue=](|v|, |type|).
+    1. Let |globaltype| be [=type_global=](|store|, |globaladdr|), where |globaltype| is of the form |mut| |valuetype|.
+    1. If |mut| is [=const=], throw a {{TypeError}.
+    1. If |valuetype| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
+    1. Let |value| be [=ToWebAssemblyValue=](|v|, |valuetype|).
     1. Let |store| be [=write_global=](|store|, |globaladdr|, |value|).
     1. If |store| is [=error=], throw a {{RangeError}} exception.
     1. Set the current agent's [=associated store=] to |store|.
