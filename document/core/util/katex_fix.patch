@@ -13,10 +13,25 @@
 <   display: inline-block;
 ---
 > /*  display: inline-block; */
-1059,1064d1058
-< }
+1060,1065d1059
 < .katex svg path {
 <   fill: currentColor;
 < }
 < .katex svg line {
 <   stroke: currentColor;
+< }
+1142a1137,1150
+> }
+> /* Force borders on tables */
+> table {
+>   border-collapse: collapse;
+> }
+> .docutils th, td {
+>   border: 1px solid;
+>   padding: .4em;
+> }
+> .footnote td {
+>   border: 0;
+> }
+> .codepre {
+>   whitespace: pre;
